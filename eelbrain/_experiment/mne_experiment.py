@@ -6882,7 +6882,7 @@ class MneExperiment(FileTree):
         raw = self.get('raw', **state)
         pipe = source_pipe = self._raw[raw]
         pipeline = [pipe]
-        while source_pipe.name != 'raw':
+        while not isinstance(source_pipe, RawSource):
             source_pipe = source_pipe.source
             pipeline.insert(0, source_pipe)
         print(f"Preprocessing pipeline: {' --> '.join(p.name for p in pipeline)}")
