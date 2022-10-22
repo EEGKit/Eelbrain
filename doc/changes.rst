@@ -7,6 +7,7 @@ New in 0.39
 -----------
 
 * API: The evaluation context for :class:`Dataset` does not include ``from numpy import *`` anymore, to avoid overwriting builtins like :func:`abs`; instead, NumPy is accessible as ``numpy``.
+* :func:`boosting` now accepts data with ragged trials (different trials of different length).
 
 
 New in 0.38
