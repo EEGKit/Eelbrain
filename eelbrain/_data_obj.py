@@ -165,7 +165,7 @@ _pickled_ds_wildcard = ("Pickled Dataset (*.pickle)", '*.pickle')
 _tex_wildcard = ("TeX (*.tex)", '*.tex')
 _tsv_wildcard = ("Plain Text Tab Separated Values (*.txt)", '*.txt')
 _txt_wildcard = ("Plain Text (*.txt)", '*.txt')
-EVAL_CONTEXT = vars(np)  # updated at end of file
+EVAL_CONTEXT = {'numpy': numpy}  # updated at end of file
 
 AxisArg = Union[None, str, Sequence[str], 'NDVar']
 DimsArg = Union[str, Sequence[str]]
