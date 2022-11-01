@@ -550,17 +550,18 @@ class RawICA(CachedRawPipe):
 
     Parameters
     ----------
-    source : str
+    source
         Name of the raw pipe to use for input data.
-    session : str | sequence of str
+    session
         Session(s) to use for estimating ICA components.
-    method : str
+        Set to ``None`` to create an ICA pipe with user-created ICA files.
+    method
         Method for ICA decomposition (default: ``'extended-infomax'``; see
         :class:`mne.preprocessing.ICA`).
-    random_state : int
+    random_state
         Set the random state for ICA decomposition to make results reproducible
         (default 0, see :class:`mne.preprocessing.ICA`).
-    cache : bool
+    cache
         Cache the resulting raw files (default ``False``).
     ...
         Additional parameters for :class:`mne.preprocessing.ICA`.
@@ -591,7 +592,7 @@ class RawICA(CachedRawPipe):
     def __init__(
             self,
             source: str,
-            session: Union[str, Sequence[str]],
+            session: Union[str, Sequence[str], None],
             method: str = 'extended-infomax',
             random_state: int = 0,
             cache: bool = False,
@@ -600,6 +601,8 @@ class RawICA(CachedRawPipe):
         CachedRawPipe.__init__(self, source, cache)
         if isinstance(session, str):
             session = (session,)
+        elif session is None:
+            pass
         else:
             if not isinstance(session, tuple):
                 session = tuple(session)
@@ -616,6 +619,9 @@ class RawICA(CachedRawPipe):
         return CachedRawPipe.as_dict(self, [*args, 'session', 'kwargs'])
 
     def load_bad_channels(self, subject, recording):
+        if self.session is None:
+            ica = self.load_ica(subject, recording)
+            return ica.info['bads']
         visit = _visit(recording)
         bad_chs = set()
         for session in self.session:
@@ -670,6 +676,10 @@ class RawICA(CachedRawPipe):
             visit: str,
     ):
         path = self._ica_path(subject, visit)
+        if self.session is None:
+            if Path(path).exists():
+                return path
+            raise RuntimeError(f"{self} is user-generated ICA")
         recordings = [compound((session, visit)) for session in self.session]
         raw = self.source.load(subject, recordings[0], False)
         bad_channels = self.load_bad_channels(subject, recordings[0])
@@ -961,7 +971,7 @@ def assemble_pipeline(raw_dict, raw_dir, cache_path, root, sessions, log):
         for key in list(raw):
             if raw[key]._can_link(linked_raw):
                 pipe = raw.pop(key)._link(key, linked_raw, root, raw_dir, cache_path, log)
-                if isinstance(pipe, RawICA):
+                if isinstance(pipe, RawICA) and pipe.session is not None:
                     missing = set(pipe.session).difference(sessions)
                     if missing:
                         raise DefinitionError(f"RawICA {key!r} lists one or more non-exising sessions: {', '.join(missing)}")
