@@ -1614,6 +1614,7 @@ def select_components(
         sysname: str = None,
         connectivity: Union[str, Sequence] = None,
         decim: int = None,
+        debug: bool = False,
 ):
     """GUI for selecting ICA-components
 
@@ -1667,5 +1668,6 @@ def select_components(
     frame.Raise()
     if TEST_MODE:
         return frame
-    else:
-        run()
+    run()
+    if debug:
+        return frame
